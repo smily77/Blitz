@@ -6,13 +6,20 @@
 #include "geo.h"
 #include "lightning.h"
 #include "map_data.h"
-// Arduino_GFX 1.6.4 provides the JC1060P470 ESP32-P4 DSI defaults. No hardware
-// pins are duplicated here: the library owns the fixed DSI/hosted configuration.
-static Arduino_ESP32DSIPanel dsiBus;
-static Arduino_DSI_Display gfx(Config::kScreenWidth, Config::kScreenHeight, &dsiBus);
+// Timing and reset values from Arduino_GFX 1.6.7's JC1060P470 device profile.
+static Arduino_ESP32DSIPanel dsiBus(
+    40, 160, 160,
+    10, 23, 12,
+    48000000);
+static Arduino_DSI_Display gfx(
+    Config::kScreenWidth, Config::kScreenHeight, &dsiBus,
+    0, true, 27,
+    jd9165_init_operations,
+    sizeof(jd9165_init_operations) / sizeof(lcd_init_cmd_t));
 static LightningStrike *frameStrikes=nullptr;
 static uint16_t rgb(uint8_t r,uint8_t g,uint8_t b){return gfx.color565(r,g,b);}
 bool displayBegin(){
+ pinMode(23,OUTPUT);digitalWrite(23,HIGH);
  if(!gfx.begin()) return false;
  if(gfx.width()!=Config::kScreenWidth||gfx.height()!=Config::kScreenHeight)return false;
  frameStrikes=static_cast<LightningStrike *>(heap_caps_malloc(Config::kStrikeCapacity*sizeof(LightningStrike),MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT));

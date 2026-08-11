@@ -7,7 +7,7 @@ Autarke Near-Realtime-Anzeige für Blitzortung-Ereignisse auf dem 7-Zoll-Board
 ## Hardware und bewusst gewählte Initialisierung
 
 Das Projekt zielt auf die Board-Konfiguration **ESP32-P4 Function EV Board** mit der
-JC1060P470-Unterstützung aus Arduino_GFX 1.6.4. `display.cpp` verwendet
+JC1060P470-Unterstützung aus Arduino_GFX 1.6.7. `display.cpp` verwendet
 `Arduino_ESP32DSIPanel`/`Arduino_DSI_Display` mit den vom Treiber bereitgestellten
 P4-DSI-Standards. Es enthält absichtlich **keine kopierten oder geratenen GPIOs**.
 `WiFi.h` benutzt beim P4-Core transparent den ESP-Hosted-Netif zum C6; es ist keine
@@ -27,9 +27,9 @@ dieses Projekt festgelegte Versionen:
 
 * Arduino IDE **2.x**
 * Espressif Arduino-ESP32-Core mit ESP32-P4- und ESP-Hosted-Unterstützung
-* GFX Library for Arduino (**Arduino_GFX**) **1.6.4**
+* GFX Library for Arduino (**Arduino_GFX**) **1.6.7**
 * PubSubClient **2.8**
-* ArduinoJson **7.4.2**
+* ArduinoJson **7.4.3**
 
 ### ESP32-Boardpaket installieren
 
@@ -46,17 +46,19 @@ dieses Projekt festgelegte Versionen:
 
 Unter **Werkzeuge → Bibliotheken verwalten** nacheinander suchen und installieren:
 
-1. `GFX Library for Arduino` von Moon On Our Nation, Version 1.6.4
+1. `GFX Library for Arduino` von Moon On Our Nation, Version 1.6.7
 2. `PubSubClient` von Nick O'Leary, Version 2.8
-3. `ArduinoJson` von Benoit Blanchon, Version 7.4.2
+3. `ArduinoJson` von Benoit Blanchon, Version 7.4.3
 
 Zusätzlich muss die persönliche, nicht im Repository enthaltene lokale Library
 `Credentials` vorhanden sein; ihr erwarteter Header und die Variablen werden im
 Abschnitt **WLAN** beschrieben.
 
-Empfohlene Boardoptionen sind OPI-PSRAM aktiviert, Partitionierung `Default`,
-`USB CDC On Boot: Enabled` und zunächst 921600 Baud Uploadgeschwindigkeit. Die
-Portauswahl hängt vom Betriebssystem und verwendeten USB-Anschluss ab.
+Die erfolgreich getesteten Boardoptionen sind `USB Mode: Hardware CDC and JTAG`,
+`USB CDC On Boot: Enabled`, PSRAM aktiviert, `Flash Size: 16MB` und das
+16-MB-Partitionsschema mit 3-MB-App. Für einen zuverlässigen ersten Upload sind
+115200 Baud eingestellt; anschließend kann eine höhere Geschwindigkeit versucht
+werden. Die Portauswahl hängt vom Betriebssystem und verwendeten USB-Anschluss ab.
 
 ## WLAN
 
