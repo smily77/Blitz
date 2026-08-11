@@ -5,7 +5,7 @@
 #include "config.h"
 #include "geo.h"
 #include "lightning.h"
-#include "secrets.h"
+#include <Credentials.h>
 static WiFiClient tcp; static PubSubClient mqtt(tcp);
 static uint32_t nextWifiAttempt=0,nextMqttAttempt=0,wifiBackoff=1000,mqttBackoff=1000;
 static bool ntpStarted=false,wasWifi=false,wasMqtt=false;
@@ -23,7 +23,7 @@ void networkBegin(){WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(false);mqtt.setSer
 bool networkWifiConnected(){return WiFi.status()==WL_CONNECTED;} bool networkMqttConnected(){return mqtt.connected();}
 void networkLoop(uint32_t now){
  bool wifi=networkWifiConnected();if(wifi!=wasWifi){Serial.println(wifi?"WiFi connected":"WiFi disconnected");if(wifi)Serial.println(WiFi.localIP());wasWifi=wifi;}
- if(!wifi){if(static_cast<int32_t>(now-nextWifiAttempt)>=0){Serial.println("WiFi connecting...");WiFi.disconnect();WiFi.begin(WIFI_SSID,WIFI_PASSWORD);nextWifiAttempt=now+wifiBackoff;wifiBackoff=min<uint32_t>(wifiBackoff*2,60000);}return;}wifiBackoff=1000;
+ if(!wifi){if(static_cast<int32_t>(now-nextWifiAttempt)>=0){Serial.println("WiFi connecting...");WiFi.disconnect();WiFi.begin(ssid,password);nextWifiAttempt=now+wifiBackoff;wifiBackoff=min<uint32_t>(wifiBackoff*2,60000);}return;}wifiBackoff=1000;
  if(!ntpStarted){configTzTime(Config::kTimezone,"pool.ntp.org","time.cloudflare.com");ntpStarted=true;Serial.println("NTP synchronization started");}
  if(!mqtt.connected()&&static_cast<int32_t>(now-nextMqttAttempt)>=0){char id[32];snprintf(id,sizeof(id),"ch-p4-%08lx",(unsigned long)ESP.getEfuseMac());Serial.println("MQTT connecting...");if(mqtt.connect(id)){Serial.println("MQTT connected");mqttBackoff=1000;for(const char *t:topics){mqtt.subscribe(t,0);Serial.printf("Subscribed: %s\n",t);}}else{nextMqttAttempt=now+mqttBackoff;mqttBackoff=min<uint32_t>(mqttBackoff*2,60000);}}
  if(mqtt.connected())mqtt.loop();if(wasMqtt&&!mqtt.connected())Serial.println("MQTT disconnected");wasMqtt=mqtt.connected();

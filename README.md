@@ -50,24 +50,38 @@ Unter **Werkzeuge → Bibliotheken verwalten** nacheinander suchen und installie
 2. `PubSubClient` von Nick O'Leary, Version 2.8
 3. `ArduinoJson` von Benoit Blanchon, Version 7.4.2
 
+Zusätzlich muss die persönliche, nicht im Repository enthaltene lokale Library
+`Credentials` vorhanden sein; ihr erwarteter Header und die Variablen werden im
+Abschnitt **WLAN** beschrieben.
+
 Empfohlene Boardoptionen sind OPI-PSRAM aktiviert, Partitionierung `Default`,
 `USB CDC On Boot: Enabled` und zunächst 921600 Baud Uploadgeschwindigkeit. Die
 Portauswahl hängt vom Betriebssystem und verwendeten USB-Anschluss ab.
 
 ## WLAN
 
-In der Arduino IDE rechts neben den Sketch-Tabs das Menü öffnen, **Neuer Tab**
-wählen und den Tab `secrets.h` anlegen. Den Inhalt von `secrets.h.example`
-hineinkopieren und SSID sowie Passwort ersetzen:
+Die Zugangsdaten liegen **nicht im Sketch und nicht in diesem Repository**. Der
+Sketch bindet stattdessen die bereits lokal installierte Datei `Credentials.h`
+aus dem persönlichen Arduino-Libraries-Verzeichnis ein:
 
 ```cpp
 #pragma once
-#define WIFI_SSID "mein-wlan"
-#define WIFI_PASSWORD "mein-passwort"
+const char* ssid = "mein-wlan";
+const char* password = "mein-passwort";
 ```
 
-Die echte `secrets.h` ist durch `.gitignore` ausgeschlossen und wird nicht
-versehentlich eingecheckt.
+Eine übliche lokale Ablage ist beispielsweise
+`Dokumente/Arduino/libraries/Credentials/src/Credentials.h`. Je nach bestehender
+Arduino-Library kann die Headerdatei auch direkt im Ordner `Credentials` liegen.
+Entscheidend ist, dass `#include <Credentials.h>` über den Arduino-Library-Suchpfad
+gefunden wird und genau die beiden oben gezeigten Variablen `ssid` und `password`
+bereitstellt. Weil die Datei außerhalb des Projektordners liegt, wird sie weder
+von diesem Repository erfasst noch auf GitHub hochgeladen.
+
+Falls die Arduino IDE beim Kompilieren `Credentials.h: No such file or directory`
+meldet, muss die lokale Credentials-Library installiert bzw. an einen der genannten
+Orte verschoben und die Arduino IDE danach neu gestartet werden.
+
 WLAN- und MQTT-Verbindungen verwenden exponentiellen Backoff (1 bis 60 Sekunden),
 der Hauptloop und das Display laufen weiter. Nach WLAN-Verbindung startet NTP mit
 der POSIX-Zeitzone `CET-1CEST,M3.5.0,M10.5.0/3` (Europe/Zurich einschließlich DST).
@@ -107,7 +121,8 @@ Die Karte ist bewusst schematisch und nicht für Navigation bestimmt.
 2. `LightningSwitzerland/LightningSwitzerland.ino` mit der Arduino IDE öffnen.
    Die IDE lädt automatisch alle `.h`- und `.cpp`-Dateien des Sketchordners als
    weitere Tabs; Dateien müssen nicht einzeln zu einem Projekt hinzugefügt werden.
-3. `secrets.h` wie im Abschnitt **WLAN** beschrieben als neuen Tab anlegen.
+3. Prüfen, dass die lokale `Credentials.h` wie im Abschnitt **WLAN** beschrieben
+   über den Arduino-Library-Suchpfad verfügbar ist.
 4. Das JC1060P470- beziehungsweise ESP32-P4-Board und den richtigen Port unter
    **Werkzeuge** auswählen.
 5. Mit **Sketch → Überprüfen/Kompilieren** kompilieren.
