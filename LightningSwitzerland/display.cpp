@@ -14,10 +14,13 @@
 static Arduino_ESP32DSIPanel dsiBus(40, 160, 160, 10, 23, 12, 48000000);
 // auto_flush=false keeps CPU cache changes invisible until the complete frame is
 // ready. A single flush below eliminates the visible clear/redraw flicker.
-static Arduino_DSI_Display gfx(
+static Arduino_DSI_Display panel(
     Config::kScreenWidth, Config::kScreenHeight, &dsiBus, 0, false, 27,
     jd9165_init_operations,
     sizeof(jd9165_init_operations) / sizeof(lcd_init_cmd_t));
+// Render into a separate PSRAM-backed canvas. This prevents individual map
+// drawing operations from ever touching the framebuffer currently scanned out.
+static Arduino_Canvas gfx(Config::kScreenWidth, Config::kScreenHeight, &panel);
 
 static LightningStrike *frameStrikes = nullptr;
 static uint8_t touchAddress = 0;
@@ -72,9 +75,13 @@ static bool touchPressed() {
 bool displayBegin() {
   pinMode(Config::kBacklightPin, OUTPUT);
   digitalWrite(Config::kBacklightPin, HIGH);
-  if (!gfx.begin()) return false;
-  if (gfx.width() != Config::kScreenWidth ||
-      gfx.height() != Config::kScreenHeight) return false;
+  if (!panel.begin()) return false;
+  if (panel.width() != Config::kScreenWidth ||
+      panel.height() != Config::kScreenHeight) return false;
+  if (!gfx.begin(GFX_SKIP_OUTPUT_BEGIN)) {
+    Serial.println("FATAL: display backbuffer allocation failed");
+    return false;
+  }
   frameStrikes = static_cast<LightningStrike *>(heap_caps_malloc(
       Config::kStrikeCapacity * sizeof(LightningStrike),
       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
@@ -82,6 +89,7 @@ bool displayBegin() {
       malloc(Config::kStrikeCapacity * sizeof(LightningStrike)));
   gfx.fillScreen(rgb(7, 12, 20));
   gfx.flush();
+  panel.flush();
   keepAwakeUntil = millis() + Config::kTouchWakeMs;
   touchBegin();
   return frameStrikes != nullptr;
@@ -192,4 +200,5 @@ void displayRender(uint32_t now, bool wifi, bool mqtt) {
   }
   drawStatus(now, wifi, mqtt);
   gfx.flush();
+  panel.flush();
 }

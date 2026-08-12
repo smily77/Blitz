@@ -137,9 +137,11 @@ Navigation bestimmt.
 
 ## Betrieb und Darstellung
 
-Der MQTT-Callback validiert und speichert nur. Mit 4 Hz wird unabhängig davon die
-Karte in den Display-Framebuffer gezeichnet und erst als vollständiger Frame
-sichtbar gemacht; Statistik und lokale Uhr werden dabei aktualisiert. Marker:
+Der MQTT-Callback validiert und speichert nur. Mit 2 Hz wird unabhängig davon die
+Karte zunächst vollständig in einen separaten PSRAM-Backbuffer gezeichnet und erst
+danach in einem kompakten Transfer sichtbar gemacht. Der DSI-Scanout sieht dadurch
+keinen schrittweisen Kartenaufbau; Statistik und lokale Uhr werden dabei
+aktualisiert. Marker:
 hell/Radius 7 plus Halo bis 60 s, orange/Radius 5 bis 5 min, dunkelrot/Radius 3 bis
 15 min. Ältere Ereignisse werden weder gezählt noch gezeichnet und aus dem Puffer
 entfernt. Grüne Punkte markieren Herisau, Sargans, Zürich, Bern, Lugano und
