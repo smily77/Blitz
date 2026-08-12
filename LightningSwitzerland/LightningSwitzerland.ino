@@ -22,6 +22,7 @@ void loop() {
   networkLoop(now);
   demoLoop(now);
   strikeStore.expire(now);
+  displayUpdatePower(now);
   if (static_cast<int32_t>(now - nextFrame) >= 0) {
     nextFrame = now + Config::kRenderIntervalMs;
     displayRender(now, networkWifiConnected(), networkMqttConnected());

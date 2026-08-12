@@ -15,9 +15,10 @@ manuelle SDIO-Pinbelegung im Sketch erforderlich. Der C6 muss die zur verwendete
 Core-Version passende ESP-Hosted-Firmware besitzen (bei fabrikneuen Guition-Boards
 normalerweise vorinstalliert).
 
-Beim Start wird geprüft, dass der Treiber tatsächlich 1024 × 600 meldet. Touch ist
-in Version 1 nicht aktiv. Direktes Arduino_GFX-Rendering vermeidet den für diese
-reine Anzeige unnötigen LVGL-Overhead.
+Beim Start wird geprüft, dass der Treiber tatsächlich 1024 × 600 meldet. Der
+kapazitive GT911-Touchcontroller wird ohne zusätzliche Bibliothek über I²C
+(SDA GPIO 7, SCL GPIO 8) gelesen. Direktes Arduino_GFX-Rendering vermeidet den
+für diese reine Anzeige unnötigen LVGL-Overhead.
 
 ## Arduino IDE und Bibliotheken
 
@@ -109,13 +110,15 @@ O(1)-Zeit, ohne den 4096-Einträge-Ringpuffer zu durchsuchen.
 
 ## Karte und Lizenz
 
-Die kompakten Polylinien in `map_data.cpp` sind für diesen Ausschnitt vereinfachte,
-auf 0,001° quantisierte Ableitungen aus **Natural Earth 1:10m Admin-0 Countries**
-und **Natural Earth Lakes**. Natural Earth stellt diese Daten in die Public Domain:
-<https://www.naturalearthdata.com/about/terms-of-use/>. Die abgeleiteten Arrays
-bleiben ebenfalls gemeinfrei. Grenzen, Seen und Blitze nutzen dieselbe lineare
-Equirektangular-Abbildung in `geo.cpp`; die zentralen Bounds stehen in `config.h`.
-Die Karte ist bewusst schematisch und nicht für Navigation bestimmt.
+Die detaillierten Polylinien in `map_data.cpp` wurden aus OpenStreetMap-Geometrien
+abgeleitet, auf deutlich weniger als einen Bildpunkt vereinfacht und auf 0,0001°
+quantisiert. Sie umfassen über 2.100 Stützpunkte für die Schweizer Landesgrenze
+sowie detaillierte Uferlinien für Genfersee, Bodensee, Neuenburgersee, Zürichsee,
+Lago Maggiore und Comer See. Die Daten stehen unter der Open Database License;
+© OpenStreetMap-Mitwirkende, <https://www.openstreetmap.org/copyright>.
+Grenzen, Seen, Städte und Blitze nutzen dieselbe lineare Equirektangular-Abbildung
+in `geo.cpp`; die zentralen Bounds stehen in `config.h`. Die Karte ist nicht für
+Navigation bestimmt.
 
 ## In der Arduino IDE bauen und flashen
 
@@ -135,12 +138,19 @@ Die Karte ist bewusst schematisch und nicht für Navigation bestimmt.
 ## Betrieb und Darstellung
 
 Der MQTT-Callback validiert und speichert nur. Mit 4 Hz wird unabhängig davon die
-Karte neu gezeichnet; Statistik und lokale Uhr werden dabei aktualisiert. Marker:
+Karte in den Display-Framebuffer gezeichnet und erst als vollständiger Frame
+sichtbar gemacht; Statistik und lokale Uhr werden dabei aktualisiert. Marker:
 hell/Radius 7 plus Halo bis 60 s, orange/Radius 5 bis 5 min, dunkelrot/Radius 3 bis
 15 min. Ältere Ereignisse werden weder gezählt noch gezeichnet und aus dem Puffer
-entfernt. Der Status zeigt 1/5/15-Minuten-Zähler, letzten Empfang, WLAN, MQTT und
+entfernt. Grüne Punkte markieren Herisau, Sargans, Zürich, Bern, Lugano und
+Neuenburg. Der Status zeigt 1/5/15-Minuten-Zähler, letzten Empfang, WLAN, MQTT und
 Ortszeit. Der feste Speicher liegt bevorzugt in PSRAM; es gibt keine Allokation pro
 Ereignis.
+
+Die Hintergrundbeleuchtung an GPIO 23 bleibt an, solange mindestens ein Blitz in
+einer der drei Kategorien gezählt wird. Sind alle Zähler null, schaltet sie aus.
+Jede Berührung des Touchscreens schaltet sie unabhängig davon für 30 Sekunden ein;
+beim Start gilt dieselbe 30-Sekunden-Frist.
 
 ## DEMO_MODE
 
@@ -158,9 +168,6 @@ zusätzlich öffentlich verfügbar.
   keine TLS-Vertraulichkeit.
 * PubSubClient führt einen Verbindungsversuch synchron aus; der Socket-Timeout ist
   deshalb auf eine Sekunde begrenzt. Versuche werden durch Backoff selten ausgeführt.
-* Die lokale Karte ist stark vereinfacht; kleine Enklaven und Uferdetails fehlen.
-* Touch, Helligkeitssteuerung und Zeitraumumschaltung sind bewusst für eine spätere
-  Version vorgesehen.
 * Vor dem ersten Hardwareeinsatz sollte die ESP-Hosted-C6-Firmware entsprechend der
   Anleitung des Boardlieferanten/Core-Releases abgeglichen werden. Der Sketch nimmt
   keine C6- oder SDIO-Pins in Besitz.
